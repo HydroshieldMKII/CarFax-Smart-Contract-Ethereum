@@ -1,198 +1,132 @@
-# CarFax Smart Contract Documentation
+# CarFax Smart Contract
 
-## Overview
+CarFax is a Solidity-based smart contract for managing vehicle records and reports on the blockchain. This contract allows authorized users to add vehicle information, record reports, and retrieve these reports for a fee.
 
-The `CarFax` contract is a vehicle history tracking system that allows authorized employees to manage vehicle data and add reports for specific vehicles. Users can query these reports by paying a fee. The contract is designed to ensure secure management of data with role-based access control.
+## Features
 
----
+- **Add Vehicles**: Authorized users can add new vehicle records.
+- **Add Reports**: Record maintenance, repair, or any other reports for vehicles.
+- **Retrieve Reports**: Retrieve all reports for a specific vehicle with payment.
+- **Authorization Management**: Owners can authorize or revoke access for employees.
 
 ## Table of Contents
 
-- [Contract Information](#contract-information)
-- [State Variables](#state-variables)
-- [Structs](#structs)
-- [Modifiers](#modifiers)
-- [Functions](#functions)
-  - [Constructor](#constructor)
-  - [Add Vehicle](#add-vehicle)
-  - [Add Report](#add-report)
-  - [Get Reports](#get-reports)
-  - [Authorize Employee](#authorize-employee)
-  - [Revoke Authorization](#revoke-authorization)
-- [Access Control](#access-control)
-- [Payment Handling](#payment-handling)
-- [Security Considerations](#security-considerations)
+- [Contract Details](#contract-details)
+- [Setup](#setup)
+- [Usage](#usage)
+  - [Adding a Vehicle](#adding-a-vehicle)
+  - [Adding a Report](#adding-a-report)
+  - [Retrieving Reports](#retrieving-reports)
+  - [Managing Authorization](#managing-authorization)
+- [Events](#events)
+- [License](#license)
 
 ---
 
-## Contract Information
+## Contract Details
 
 - **License**: GPL-3.0
-- **Solidity Version**: ^0.7.0 to <0.9.0
+- **Pragma**: `>=0.7.0 <0.9.0`
+- **Contract Name**: `CarFax`
+- **Compiler Version**: `0.8.19` (evm: `paris`)
 
----
+## Usage
 
-## State Variables
+### Adding a Vehicle
 
-### `owner`
+Authorized users can add vehicles using the `addVehicle` function.
 
-- **Type**: `address`
-- **Description**: Address of the contract owner with administrative privileges.
+#### Parameters:
 
-### `reportFee`
+- `_vin` (string): Vehicle Identification Number.
+- `_color` (string): Vehicle color.
+- `_brand` (string): Vehicle brand.
+- `_model` (string): Vehicle model.
+- `_makeYear` (string): Vehicle manufacturing year.
 
-- **Type**: `uint`
-- **Initial Value**: `0.01 ether`
-- **Description**: Fee required to retrieve vehicle reports.
-
-### `vehicles`
-
-- **Type**: `mapping(string => Vehicle)`
-- **Description**: Stores vehicle data indexed by their VIN.
-
-### `authorizedEmployees`
-
-- **Type**: `mapping(address => bool)`
-- **Description**: Tracks employees authorized to manage vehicle and report data.
-
----
-
-## Structs
-
-### `Vehicle`
-
-- **Fields**:
-  - `color`: `string` - Color of the vehicle.
-  - `brand`: `string` - Brand of the vehicle.
-  - `model`: `string` - Model of the vehicle.
-  - `makeYear`: `string` - Manufacture year of the vehicle.
-  - `reports`: `Report[]` - Array of reports associated with the vehicle.
-
-### `Report`
-
-- **Fields**:
-  - `createdOn`: `uint` - Timestamp of when the report was created.
-  - `amount`: `uint` - Monetary value related to the report (e.g., damages).
-  - `comment`: `string` - Description or details of the report.
-
----
-
-## Modifiers
-
-### `onlyOwner`
-
-- **Description**: Restricts access to the contract owner.
-- **Reverts**: If `msg.sender` is not the owner.
-
-### `onlyAuthorized`
-
-- **Description**: Restricts access to authorized employees and the owner.
-- **Reverts**: If `msg.sender` is not authorized.
-
----
-
-## Functions
-
-### Constructor
+#### Example:
 
 ```solidity
-constructor() {
-    owner = msg.sender;
-    reportFee = 0.01 ether;
-}
+addVehicle("1HGCM82633A123456", "Red", "Honda", "Accord", "2003");
 ```
 
-- **Description**: Initializes the contract with the owner's address and the report fee.
+### Adding a Report
 
-### Add Vehicle
+Authorized users can add reports for a specific vehicle using the `addReport` function.
+
+#### Parameters:
+
+- `_vin` (string): Vehicle Identification Number.
+- `_amount` (uint): Amount for the report (Eg. cost of maintenance).
+- `_comment` (string): Comment about the report.
+
+#### Example:
 
 ```solidity
-function addVehicle(string memory _vin, string memory _color, string memory _brand, string memory _model, string memory _makeYear) public onlyAuthorized {
-    // Implementation details
-}
+addReport("1HGCM82633A123456", 10000000000000000, "Oil change");
 ```
 
-- **Description**: Adds a new vehicle to the system.
-- **Parameters**:
-  - `_vin`: VIN (Vehicle Identification Number) of the vehicle.
-  - `_color`: Color of the vehicle.
-  - `_brand`: Brand of the vehicle.
-  - `_model`: Model of the vehicle.
-  - `_makeYear`: Manufacture year of the vehicle.
+### Retrieving Reports
 
-### Add Report
+Any user can retrieve reports by paying the required `reportFee`.
+
+#### Parameters:
+
+- `_vin` (string): Vehicle Identification Number.
+
+#### Example:
 
 ```solidity
-function addReport(string memory _vin, uint _amount, string memory _comment) public onlyAuthorized {
-    // Implementation details
-}
+getReports("1HGCM82633A123456");
 ```
 
-- **Description**: Adds a new report for a specific vehicle.
-- **Parameters**:
-  - `_vin`: VIN of the vehicle.
-  - `_amount`: Monetary value related to the report.
-  - `_comment`: Description or details of the report.
+#### Notes:
 
-### Get Reports
+- Payment must be at least `reportFee` (0.01 ether).
+- Emits `ReportRetrieved` events for each report.
+
+### Managing Authorization
+
+#### Authorizing Employees
+
+Only the contract owner can authorize employees using the `authorizeEmployee` function.
+
+#### Parameters:
+
+- `_employee` (address): Address of the employee to authorize.
+
+#### Example:
 
 ```solidity
-function getReports(string memory _vin) public payable returns (Report[] memory) {
-    // Implementation details
-}
+authorizeEmployee(0x123...456);
 ```
 
-- **Description**: Retrieves all reports associated with a vehicle.
-- **Parameters**:
-  - `_vin`: VIN of the vehicle.
-- **Returns**: Array of `Report` structs.
+#### Revoking Authorization
 
-### Authorize Employee
+Only the contract owner can revoke employee authorization using the `revokeAuthorization` function.
+
+#### Parameters:
+
+- `_employee` (address): Address of the employee to revoke.
+
+#### Example:
 
 ```solidity
-function authorizeEmployee(address _employee) public onlyOwner {
-    // Implementation details
-}
+revokeAuthorization(0x123...456);
 ```
 
-- **Description**: Grants an address permission to manage vehicle and report data.
-- **Parameters**:
-  - `_employee`: Address of the employee to authorize.
+## Events
 
-### Revoke Authorization
+- `ReportRetrieved`: Emitted when a report is retrieved.
+  - `reportedAt`: Timestamp of the report.
+  - `amount`: Amount associated with the report.
+  - `comment`: Comment about the report.
+  - `brand`: Vehicle brand.
+  - `model`: Vehicle model.
+  - `color`: Vehicle color.
 
-```solidity
-function revokeAuthorization(address _employee) public onlyOwner {
-    // Implementation details
-}
-```
+## License
 
-- **Description**: Revokes an employee's authorization to manage vehicle and report data.
-- **Parameters**:
-  - `_employee`: Address of the employee to deauthorize.
+This project is licensed under the [GPL-3.0 License](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 ---
-
-## Access Control
-
-- The contract owner has full administrative privileges.
-- Authorized employees can manage vehicle data and add reports.
-
----
-
-## Payment Handling
-
-- A fee is required to retrieve vehicle reports.
-- The fee is set to `0.01 ether` by default.
-
----
-
-## Security Considerations
-
-- Access control is enforced through modifiers to restrict unauthorized access.
-
----
-
-## Disclaimer
-
-This document is for informational purposes only and does not constitute financial advice. Readers are encouraged to do their research and due diligence before interacting with the smart contract.
