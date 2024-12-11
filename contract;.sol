@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 contract CarFax {
-    address public owner;
+    address private owner;
     uint public reportFee = 0.01 ether;
 
     struct Vehicle {
@@ -14,13 +14,22 @@ contract CarFax {
     }
 
     struct Report {
-        uint createdOn;
+        uint reportedAt;
         uint amount;
         string comment;
     }
 
     mapping(string => Vehicle) public vehicles;
     mapping(address => bool) private authorizedEmployees;
+
+    event ReportRetrieved(
+        uint reportedAt,
+        uint amount,
+        string comment,
+        string brand,
+        string model,
+        string color
+    );
 
     constructor() {
         owner = msg.sender;
@@ -44,7 +53,7 @@ contract CarFax {
         string memory _makeYear
     ) public onlyAuthorized {
         require(bytes(vehicles[_vin].brand).length == 0, "Vehicle exists");
-        
+
         vehicles[_vin].color = _color;
         vehicles[_vin].brand = _brand;
         vehicles[_vin].model = _model;
@@ -52,57 +61,40 @@ contract CarFax {
     }
 
     function addReport(
-        string memory _vin, 
-        uint _amount, 
+        string memory _vin,
+        uint _amount,
         string memory _comment
     ) public onlyAuthorized {
         require(bytes(vehicles[_vin].brand).length > 0, "Vehicle not found");
-        vehicles[_vin].reports.push(Report({
-            createdOn: block.timestamp,
-            amount: _amount,
-            comment: _comment
-        }));
+
+        vehicles[_vin].reports.push(
+            Report({
+                reportedAt: block.timestamp,
+                amount: _amount,
+                comment: _comment
+            })
+        );
     }
 
-    function getReports(string memory _vin)
-        public
-        payable
-        returns (
-            uint[] memory createdOn,
-            uint[] memory amounts,
-            string[] memory comments,
-            string memory brand,
-            string memory model,
-            string memory color
-        )
-    {
+    function getReports(string memory _vin) public payable {
         require(msg.value >= reportFee, "Insufficient payment");
+        require(bytes(vehicles[_vin].model).length > 0, "Vehicle not found");
 
         Vehicle storage vehicle = vehicles[_vin];
-        require(bytes(vehicle.brand).length > 0, "Vehicle not found");
 
         payable(owner).transfer(msg.value);
 
-        uint reportCount = vehicle.reports.length;
-
-        createdOn = new uint[](reportCount);
-        amounts = new uint[](reportCount);
-        comments = new string[](reportCount);
-
-        for (uint i = 0; i < reportCount; i++) {
-            createdOn[i] = vehicle.reports[i].createdOn;
-            amounts[i] = vehicle.reports[i].amount;
-            comments[i] = vehicle.reports[i].comment;
+        for (uint i = 0; i < vehicle.reports.length; i++) {
+            Report memory report = vehicle.reports[i];
+            emit ReportRetrieved(
+                report.reportedAt,
+                report.amount,
+                report.comment,
+                vehicle.brand,
+                vehicle.model,
+                vehicle.color
+            );
         }
-
-        return (
-            createdOn,
-            amounts,
-            comments,
-            vehicle.brand,
-            vehicle.model,
-            vehicle.color
-        );
     }
 
     function authorizeEmployee(address _employee) public onlyOwner {
