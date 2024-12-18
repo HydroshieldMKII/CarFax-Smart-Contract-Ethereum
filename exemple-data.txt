@@ -1,0 +1,7 @@
+{
+    "addReport":["1B4GP25R51B138763", 250, "Maintenance"],
+    "addVehicle": ["1B4GP25R51B138763", "Blue", "Ford", "F-150", 2025],
+    "getReports": "1B4GP25R51B138763",
+    "authorizeEmployee": "0x0DC6532cCb32af2E2BD1b7Dc082875E0DC86DFFF",
+    "revokeAuthorization": "0x0DC6532cCb32af2E2BD1b7Dc082875E0DC86DFFF"
+}
