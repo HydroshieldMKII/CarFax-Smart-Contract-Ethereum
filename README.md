@@ -111,7 +111,7 @@ function addVehicle(
 
 ### addReport
 
-Adds a maintenance report for a vehicle. The `minimumFee` is required to create a report. The person who adds the report is considered the reporter and must be an authorized employee.
+Adds a maintenance report for a vehicle. The person who adds the report is considered the reporter.
 
 ```solidity
 function addReport(
@@ -121,12 +121,12 @@ function addReport(
 ) public onlyAuthorized
 ```
 
-### retrieveReport
+### getReports
 
-Retrieves a vehicle report and distributes fees among employees.
+Retrieves a vehicle report and distributes fees among employees. The `minimumFee` is required to retrieve the reports.
 
 ```solidity
-function retrieveReport(string memory _vin) public payable
+function getReports(string memory _vin) public payable
 ```
 
 ### authorizeEmployee
