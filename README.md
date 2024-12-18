@@ -139,7 +139,7 @@ function authorizeEmployee(address _employee) public onlyOwner
 
 ### revokeEmployee
 
-Revokes an employee's authorization to manage vehicles and reports.
+Revokes an employee's authorization to manage vehicles and reports. The employee will also no longer get a share of the fees.
 
 ```solidity
 function revokeEmployee(address _employee) public onlyOwner
@@ -157,8 +157,9 @@ The contract can be deployed on the Ethereum blockchain using Remix or other Sol
 
 ## Additional Notes
 
-- Contract includes a `receive()` function to prevent Ether from being locked.
 - Reports are tied to a unique VIN, ensuring data consistency and integrity.
+- Employee addresses are tracked to distribute fees accurately and transparently.
+- The contract owner has administrative control over employee authorization and contract management.
 
 ## Example Use Case
 
